@@ -1,0 +1,276 @@
+/* Dark, mono-accented, one narrow column floating over a live 3D backdrop. */
+:root {
+  --bg: #0a0a0a;
+  --fg: #ececec;
+  --muted: #8c8c8c;
+  --faint: #262626;
+  --soft: #141414;
+  --accent: #e2e2e2; /* overwritten every 150ms by js/accent.js */
+  --veil: 74%;
+  --panel: color-mix(in srgb, var(--soft) 55%, transparent);
+  --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+/* On a phone the column is the whole screen, so the veil is the only thing between the reader and the city. */
+@media (max-width: 900px) { :root { --veil: 46%; } }
+
+* { box-sizing: border-box; }
+html { background: var(--bg); scrollbar-gutter: stable; }
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 16px/1.65 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The column: a translucent veil over the backdrop, feathered out with a huge soft shadow. */
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 20px;
+  min-height: 100vh;
+  background: color-mix(in srgb, var(--bg) var(--veil), transparent);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 0 60px 40px color-mix(in srgb, var(--bg) var(--veil), transparent);
+}
+@media (min-width: 720px) { .wrap { padding: 0 40px; } }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color .15s;
+}
+a:hover { text-decoration-color: currentColor; }
+
+/* Header: "> name" on the left, "/current" page on the right. */
+header.site {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 28px 0 0;
+  font: 14px/1 var(--mono);
+}
+header.site .home { text-decoration: none; font-weight: 500; }
+header.site .home::before { content: ">"; color: var(--accent); margin-right: 8px; }
+header.site nav { display: flex; gap: 18px; flex-wrap: wrap; }
+header.site nav a { color: var(--muted); text-decoration: none; }
+header.site nav a:hover, header.site nav a[aria-current="page"] { color: var(--fg); }
+header.site nav a[aria-current="page"]::before { content: "/"; color: var(--accent); }
+
+main { padding: clamp(48px, 10vh, 96px) 0 72px; }
+h1 {
+  margin: 0 0 16px;
+  font-size: clamp(34px, 6vw, 44px); line-height: 1.08;
+  font-weight: 600; letter-spacing: -.035em;
+}
+/* Section headings are little "// LABEL" chips. */
+h2 {
+  width: fit-content;
+  margin: 56px 0 18px; padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--panel); backdrop-filter: blur(6px);
+  font: 500 12px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+h2::before { content: "// "; color: var(--accent); }
+h3 { margin: 0; font-size: 16px; font-weight: 500; letter-spacing: -.01em; }
+p { margin: 0 0 14px; }
+.lede { font-size: 18px; color: var(--muted); max-width: 34em; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* Key/value card. */
+.kv {
+  display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px 16px;
+  margin: 32px 0 0; padding: 18px 20px;
+  border: 1px solid var(--faint); border-radius: 10px;
+  background: var(--panel); backdrop-filter: blur(6px);
+  font-size: 15px;
+}
+.kv dt { font: 13px/1.65 var(--mono); color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+
+/* Timeline of jobs/projects. */
+.log {
+  list-style: none; margin: 0; padding: 0 16px;
+  border: 1px solid var(--faint); border-radius: 10px;
+  background: var(--panel); backdrop-filter: blur(6px);
+}
+.log li {
+  display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 16px;
+  padding: 14px 0; border-top: 1px solid var(--faint);
+}
+.log li:first-child { border-top: 0; }
+.log .when { font: 13px/1.75 var(--mono); color: var(--muted); white-space: nowrap; }
+.log .org { color: var(--muted); font-weight: 400; }
+.log p { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+
+.posts { list-style: none; margin: 0; padding: 0; }
+.posts li { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 16px; padding: 10px 0; }
+.posts time { font: 13px/1.75 var(--mono); color: var(--muted); }
+
+.empty {
+  padding: 18px 20px;
+  border: 1px dashed var(--faint); border-radius: 10px;
+  color: var(--muted); font: 14px/1.6 var(--mono);
+}
+
+/* The "- " marker is a ::before, not a ::marker: a marker inherits -webkit-text-fill-color and
+   would vanish with the text during a page transition. */
+ul.plain { margin: 0; padding-left: 18px; list-style: none; }
+ul.plain li { margin: 4px 0; }
+ul.plain li::before { content: "- "; color: var(--accent); font-family: var(--mono); display: inline-block; width: 18px; margin-left: -18px; }
+
+/* Footer: socials and the clickable scene name, like a file path. */
+footer.site {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 24px 0 40px;
+  border-top: 1px solid var(--faint);
+  font: 12px/1.6 var(--mono); color: var(--muted);
+}
+footer.site a { color: var(--muted); }
+footer.site .meta { display: inline-flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-left: auto; }
+footer.site .scene {
+  padding: 0; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--faint);
+  text-underline-offset: 3px; text-decoration-thickness: 1px;
+}
+footer.site .scene:hover { color: var(--fg); text-decoration-color: currentColor; }
+footer.site .scene[hidden] { display: none; }
+.foot { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.socials { display: inline-flex; gap: 10px; }
+.socials a { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; text-decoration: none; }
+.socials a:hover { background: var(--soft); }
+.logo { display: inline-grid; place-items: center; width: 14px; height: 14px; color: var(--muted); }
+.logo svg { width: 100%; height: 100%; fill: currentColor; }
+.socials a:hover .logo { color: var(--fg); }
+
+@media (max-width: 520px) {
+  .log li, .posts li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .kv { grid-template-columns: 72px minmax(0, 1fr); padding: 16px; }
+}
+
+/* ---- Keyboard navigation (js/keynav.js) ---- */
+.kcursor, .krow, .kbar { pointer-events: none; opacity: 0; }
+.kcursor {
+  position: absolute; left: 0; top: 0; margin-top: -.6em;
+  font: 500 14px/1.2 var(--mono); color: var(--accent);
+  z-index: 11; transition: transform 80ms ease-out, opacity 120ms;
+}
+.krow {
+  position: absolute; left: 0; top: 0; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent);
+  z-index: 0; transition: transform 80ms ease-out, height 80ms ease-out, opacity 120ms;
+}
+.kbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 7px 20px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(6px);
+  border-top: 1px solid var(--faint);
+  font: 12px/1.4 var(--mono); color: var(--muted);
+  z-index: 20; white-space: pre;
+}
+.kbar .kpath { color: var(--accent); overflow: hidden; text-overflow: ellipsis; }
+.keynav .kcursor, .keynav .krow, .kready .kbar { opacity: 1; }
+.kready footer.site { padding-bottom: 64px; }
+.keynav .kcursor { animation: kblink 1.1s steps(1) infinite; }
+@keyframes kblink { 50% { opacity: 0; } }
+/* During a page transition (html.ktx, set by keynav on pagebits:start/end) the cursor and row step out of the shot. */
+.ktx .kcursor, .ktx .krow { opacity: 0; }
+.ktx .kcursor { animation: none; }
+.keynav header.site .home::before { visibility: hidden; }
+.keynav .ksel { color: var(--fg); }
+.keynav a.ksel, .keynav .scene.ksel, .keynav li.ksel a { color: var(--fg); text-decoration-color: currentColor; }
+.keynav .ksel .logo { color: var(--fg); }
+.keynav .socials a.ksel { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.kjump .kcursor, .kjump .krow { transition: none; }
+.kshake .krow, .keynav.kshake .kcursor { animation: kshake .28s ease-out; }
+@keyframes kshake { 15% { translate: -5px; } 35% { translate: 4px; } 55% { translate: -3px; } 75% { translate: 2px; } }
+
+/* ---- Page transitions (js/pagebits.js) ---- */
+/* An explicit size matters: a canvas sizes itself to its pixel buffer (viewport × devicePixelRatio),
+   not to inset: 0, so without it the effect is drawn oversized on any screen scaled above 100%.
+   pagebits.js pins the inline width/height to backing ÷ dpr: html's scrollbar-gutter makes 100%
+   narrower than documentElement.clientWidth, which squeezed the glyphs and doubled the hand-off. */
+.pagebits { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 12; pointer-events: none; }
+/* .tx-hide sits on the block that holds the text (never on main/footer); furniture drawn by
+   pseudo-elements stays put, and a link's underline fades with its word. */
+.tx-hide { -webkit-text-fill-color: transparent; }
+.tx-hide::before, .tx-hide::after, .tx-hide ::before, .tx-hide ::after { -webkit-text-fill-color: currentColor; }
+.tx-hide a, a.tx-hide { text-decoration-color: transparent; } /* `a` already transitions text-decoration-color; scoped so hover is untouched */
+/* First paint waits for the entrance effect; the 3s fallback means content never stays hidden. */
+html.entering :is(main, footer.site) { opacity: 0; animation: entered 0s 3s forwards; }
+@keyframes entered { to { opacity: 1; } }
+
+/* ---- 3D backdrop (js/backdrop.js) ---- */
+.backdrop {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100lvh;
+  z-index: -1; pointer-events: none;
+  opacity: 0; transition: opacity 1.2s ease;
+  /* Fade the edges, and dim behind the text column by --center (set per scene). */
+  --fade:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 9%, #000 80%, transparent),
+    linear-gradient(to right, #000 calc(50% - 480px), rgb(0 0 0 / var(--center, 1)) calc(50% - 340px),
+      rgb(0 0 0 / var(--center, 1)) calc(50% + 340px), #000 calc(50% + 480px));
+  mask-image: var(--fade);
+  mask-composite: intersect;
+}
+.backdrop.on { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kcursor, .krow { transition: none; }
+  .ktx .kcursor, .ktx .krow { transition: none; }
+  .keynav .kcursor, .kshake .krow, .keynav.kshake .kcursor { animation: none; }
+}
+
+/* ---- Artist statement and works grid ---- */
+.statement p { color: var(--muted); font-size: 17px; }
+.statement p:first-child { color: var(--fg); }
+.works { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 16px; }
+.works figure { margin: 0; }
+.works a { display: block; border-radius: 8px; overflow: hidden; border: 1px solid var(--faint); background: var(--soft); }
+.works img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .4s ease, filter .4s ease; filter: saturate(.92); }
+.works a:hover img, .keynav .ksel img { transform: scale(1.03); filter: none; }
+.keynav .works .ksel a { border-color: var(--accent); }
+.works figcaption { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.works .t { font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.works .m { font: 12px/1.4 var(--mono); color: var(--muted); }
+.more { margin: 22px 0 0; font: 13px/1.6 var(--mono); }
+.more a { color: var(--muted); }
+.more a:hover { color: var(--fg); }
+@media (max-width: 520px) { .works { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- Black and white film (js/film.js) ---- */
+::selection { background: #e2e2e2; color: #0a0a0a; }
+/* Photographs are shown in black and white, a touch crushed, like a print. */
+.works img { filter: grayscale(1) contrast(1.25) brightness(.85); }
+.works a:hover img, .keynav .ksel img { filter: grayscale(1) contrast(1.25) brightness(1); }
+/* Soften the 3D just slightly, like a lens that isn't quite in focus. */
+.backdrop { filter: grayscale(1) blur(.5px); }
+
+/* Light grain, as on her original homepage: fractal noise, overlay-blended at low opacity.
+   Each layer is its own fixed element so the blend reaches the page underneath (a wrapper with a
+   z-index would isolate it and the overlay would do nothing). */
+.film-grain {
+  --grain: .2; /* strength on photos and mid-tones: her homepage uses .12 */
+  position: fixed; inset: -180px; z-index: 40;
+  pointer-events: none;
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  opacity: var(--grain);
+  will-change: transform;
+}
+/* Overlay barely touches near-black, so a second, very faint screen layer carries the grain into
+   the dark background the way it shows on her mid-grey hero. */
+.film-grain.shadows { --grain: .06; mix-blend-mode: screen; }
+.film-vignette {
+  --vignette: .45; /* how dark the corners get */
+  position: fixed; inset: 0; z-index: 39; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgb(0 0 0 / var(--vignette)) 100%);
+}

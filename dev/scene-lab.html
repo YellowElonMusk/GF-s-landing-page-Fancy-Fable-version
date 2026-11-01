@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scene lab</title>
+<!--
+  Test harness for js/scenes.js: one scene, raw render, no site CSS, no main.js.
+    ?scene=N      builder index (0 eiffelTower, 1 seineBridge, 2 rooftops)
+    ?flip=1       the mirrored build
+    ?debug        console.table from finish() + an on-screen HUD (draw calls, verts, camera)
+    ?guides       the text-column band (50% +- 340px) and 10% height lines, for checking framing
+    ?t=SECONDS    freeze the clock (deterministic screenshots)
+    ?accent=HEX   accent colour (default #e2e2e2)
+    ?still        render one frame only (what reduced motion sees)
+    ?veil=N       lay the site's column veil over the whole frame at N% (55 = the phone's; 74 = desktop)
+  Keys: , and . reload with the previous / next scene; f toggles flip.
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0a0a; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #hud { position: fixed; left: 8px; top: 8px; color: #9a9a9a; font: 12px/1.4 ui-monospace, Menlo, monospace; white-space: pre; pointer-events: none; text-shadow: 0 0 3px #000; }
+  #veil { position: fixed; inset: 0; pointer-events: none; display: none; background: #0a0a0a; }
+  #guides { position: fixed; inset: 0; pointer-events: none; display: none; }
+  #guides .col { position: absolute; top: 0; bottom: 0; left: calc(50% - 340px); width: 680px; border-left: 1px dashed #444; border-right: 1px dashed #444; }
+  #guides .ramp { position: absolute; top: 0; bottom: 0; left: calc(50% - 480px); width: 960px; border-left: 1px dotted #333; border-right: 1px dotted #333; }
+  #guides .h { position: absolute; left: 0; right: 0; border-top: 1px dotted #3a3a3a; color: #555; font: 10px ui-monospace, monospace; padding-left: 4px; }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="veil"></div>
+<div id="guides"><div class="ramp"></div><div class="col"></div></div>
+<div id="hud"></div>
+<script type="module">
+import * as THREE from 'three';
+// Cache-busted so an edit to scenes.js shows on the next load without a hard refresh.
+const { SCENES } = await import(`../js/scenes.js?v=${Date.now()}`);
+
+const q = new URLSearchParams(location.search);
+const names = Object.keys(SCENES);
+const n = ((Number(q.get('scene')) || 0) % names.length + names.length) % names.length;
+const flip = q.get('flip') === '1';
+const debug = q.has('debug');
+const frozen = q.has('t') ? Number(q.get('t')) : null;
+const once = q.has('still');
+
+if (q.has('veil')) {
+  const v = document.getElementById('veil');
+  v.style.display = 'block';
+  v.style.opacity = String(Number(q.get('veil') || 55) / 100);
+}
+if (q.has('guides')) {
+  const g = document.getElementById('guides');
+  g.style.display = 'block';
+  for (let p = 10; p < 100; p += 10) {
+    const d = document.createElement('div');
+    d.className = 'h';
+    d.style.bottom = `${p}%`;
+    d.textContent = `${p}%`;
+    g.appendChild(d);
+  }
+}
+
+const bg = new THREE.Color('#0a0a0a');
+const accent = new THREE.Color(q.get('accent') ? `#${q.get('accent').replace('#', '')}` : '#e2e2e2');
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setClearColor(bg, 1);
+const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 1500);
+
+const t0 = performance.now();
+const current = SCENES[names[n]](bg, flip);
+const buildMs = performance.now() - t0;
+const kit = current.kit;
+
+function layout() {
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  current.frame(camera, innerWidth);
+}
+layout();
+addEventListener('resize', () => { layout(); if (once) draw(performance.now()); });
+
+const hud = document.getElementById('hud');
+let last = -Infinity, frames = 0, fpsAt = performance.now(), fps = 0;
+function draw(t) {
+  const time = frozen ?? t / 1000;
+  kit.tick(accent, time);
+  renderer.render(kit.scene, camera);
+  if (debug) {
+    frames++;
+    if (t - fpsAt > 1000) { fps = Math.round((frames * 1000) / (t - fpsAt)); frames = 0; fpsAt = t; }
+    const r = renderer.info.render;
+    const p = camera.position;
+    hud.textContent = [
+      `${names[n]} flip=${flip} ${innerWidth}x${innerHeight} dpr=${renderer.getPixelRatio()}`,
+      `calls ${r.calls}  tris ${r.triangles}  lines ${r.lines}  fps ${fps}  build ${buildMs.toFixed(1)}ms`,
+      `cam (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})  fog ${kit.scene.fog.near.toFixed(1)}/${kit.scene.fog.far.toFixed(1)}`,
+    ].join('\n');
+  }
+}
+function loop(t) {
+  if (t - last >= 1000 / 30 - 2) { last = t; draw(t); }
+  requestAnimationFrame(loop);
+}
+if (once) draw(performance.now());
+else requestAnimationFrame(loop);
+
+addEventListener('keydown', (e) => {
+  if (e.key === ',' || e.key === '.') { q.set('scene', String((n + (e.key === '.' ? 1 : -1) + names.length) % names.length)); location.search = q.toString(); }
+  if (e.key === 'f') { q.set('flip', flip ? '0' : '1'); location.search = q.toString(); }
+});
+
+// For probes from the browser tool.
+window.__lab = { THREE, kit, camera, renderer, current, names, n, flip, draw };
+</script>
+</body>
+</html>

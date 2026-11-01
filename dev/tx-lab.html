@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<script>
+  // Same entrance gate as the real pages, so the lab also exercises the first-load effect.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('entering');
+</script>
+<title>tx-lab</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/site.css">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+<script type="module" src="../js/main.js"></script>
+<style>
+  /* The lab strip lives outside .wrap so it survives the router's swap; it never joins the transition. */
+  .txlab {
+    position: fixed; left: 12px; bottom: 44px; z-index: 21; max-width: 46ch;
+    padding: 8px 10px; border: 1px solid var(--faint); border-radius: 6px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(6px);
+    font: 11px/1.5 var(--mono); color: var(--muted); white-space: pre-wrap;
+  }
+  .txlab[hidden] { display: none; }
+  .txlab .txout { display: block; min-height: 7.5em; color: var(--fg); }
+  .txlab .txmode { display: block; margin: 4px 0; color: var(--accent); }
+  .txlab button {
+    margin: 2px 4px 0 0; padding: 1px 6px; border: 1px solid var(--faint); border-radius: 4px;
+    background: var(--soft); color: var(--fg); font: inherit; cursor: pointer;
+  }
+  .txlab button:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+<canvas class="backdrop" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="site">
+    <a class="home" href="../">lillith w</a>
+    <nav>
+      <a href="../gallery.html">gallery</a>
+      <a href="../about.html">about</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Transition lab</h1>
+    <p class="lede">A fixture page for <strong>js/pagebits.js</strong>: one heading, a lede, three paragraphs, a plain list, two prints and the footer.</p>
+
+    <h2 id="text">Text</h2>
+    <p>The reel changes and the letters go soft before they lift off as silver grain. Nothing in the column moves: the blocks that hold the words go transparent and the canvas paints them from then on, so underlines, chips and markers stay exactly where they are.</p>
+    <p>Grains drift in the beam while the next page is fetched, then leave on wandering arcs with long-exposure streaks. Most bow one way, a visible minority the other, and the heading comes up last on the beat the camera stops.</p>
+    <p>Under the fold nothing is ever hidden: only glyphs within half a viewport of the edge join the effect, so a long page keeps its captions while the top half burns. <a href="../about.html">A link inside a paragraph</a> fades its underline with its word.</p>
+
+    <h2 id="list">List</h2>
+    <ul class="plain">
+      <li><a href="../gallery.html">Gallery</a> (internal, prefetched on hover)</li>
+      <li><a href="../about.html">About</a> (internal)</li>
+      <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a> (external, untouched by the router)</li>
+    </ul>
+
+    <h2 id="prints">Prints</h2>
+    <div class="works">
+      <figure>
+        <a href="https://media.base44.com/images/public/6a7b7a45b68b1d4f8c360766/7ddede8b3_71713877-6C73-4A2B-AF61-1B9A5273D1B4.jpg/v1/fit/w_2400,h_2400,al_c,q_85,enc_webp/7ddede8b3_71713877-6C73-4A2B-AF61-1B9A5273D1B4.webp" target="_blank" rel="noopener"><img src="https://media.base44.com/images/public/6a7b7a45b68b1d4f8c360766/7ddede8b3_71713877-6C73-4A2B-AF61-1B9A5273D1B4.jpg/v1/fill/w_640,h_480,al_c,q_85,enc_webp/7ddede8b3_71713877-6C73-4A2B-AF61-1B9A5273D1B4.webp" alt="Transit" width="640" height="480" loading="lazy" decoding="async"></a>
+        <figcaption><span class="t">Transit</span><span class="m">Undated · Digital photograph</span></figcaption>
+      </figure>
+      <figure>
+        <a href="https://media.base44.com/images/public/6a7b7a45b68b1d4f8c360766/af5d9f1d1_eaHYFW2HQ3Ccab2G6xMDqA_thumb_1f83.jpg/v1/fit/w_2400,h_2400,al_c,q_85,enc_webp/af5d9f1d1_eaHYFW2HQ3Ccab2G6xMDqA_thumb_1f83.webp" target="_blank" rel="noopener"><img src="https://media.base44.com/images/public/6a7b7a45b68b1d4f8c360766/af5d9f1d1_eaHYFW2HQ3Ccab2G6xMDqA_thumb_1f83.jpg/v1/fill/w_640,h_480,al_c,q_85,enc_webp/af5d9f1d1_eaHYFW2HQ3Ccab2G6xMDqA_thumb_1f83.webp" alt="Across the Seine" width="640" height="480" loading="lazy" decoding="async"></a>
+        <figcaption><span class="t">Across the Seine</span><span class="m">Undated · Digital photograph</span></figcaption>
+      </figure>
+    </div>
+    <p class="more"><a href="../gallery.html">Complete catalogue, 32 works</a></p>
+  </main>
+  <footer class="site">
+    <span class="foot">
+      <span class="copy">© Lillith W Studio</span>
+      <span class="socials"><a href="https://www.instagram.com/" rel="me" aria-label="instagram" title="instagram"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.4" r="1.3"/></svg></span></a></span>
+      <a href="mailto:studio@lillithw.art">studio@lillithw.art</a>
+    </span>
+    <span class="meta">
+      <button class="scene" type="button" title="next scene" hidden></button>
+      <span class="built">built 2026-10-31</span>
+    </span>
+  </footer>
+</div>
+
+<!-- Shown only with ?debug (which also turns on window.__pagebits in js/pagebits.js). -->
+<div class="txlab" hidden aria-hidden="true">
+  <span class="txout">waiting for __pagebits</span>
+  <span class="txmode">fetch: real</span>
+  <button type="button" data-fetch="slow">slow 2500</button><button type="button" data-fetch="fail">fail</button><button type="button" data-fetch="real">real</button>
+  <button type="button" data-act="freeze">freeze at swap+250</button><button type="button" data-act="thaw">thaw</button>
+</div>
+<script type="module">
+  if (new URLSearchParams(location.search).has('debug')) {
+    const strip = document.querySelector('.txlab');
+    const out = strip.querySelector('.txout');
+    const modeEl = strip.querySelector('.txmode');
+    strip.hidden = false;
+    const real = window.fetch.bind(window);
+    let mode = 'real';
+    const log = [];
+    for (const name of ['pageburn', 'pageshift', 'pagebits:start', 'pagebits:end'])
+      addEventListener(name, (e) => {
+        const d = e.detail ?? {};
+        const extra = name === 'pagebits:end' ? ` ${d.outcome} ${Math.round(d.ms)}ms` : name === 'pageshift' ? ` ${d.kind} dir ${d.dir}` : '';
+        log.push(`${Math.round(performance.now())} ${name}${extra}`);
+        if (log.length > 5) log.shift();
+      });
+    const tick = () => {
+      const c = window.__pagebits?.counters;
+      out.textContent = c
+        ? `phase ${c.phase}  bits ${c.bits}  glyphs ${c.glyphs}\nworst ${c.worst.toFixed(1)} ms  frames ${c.frames}\nstarts ${c.starts}  swaps ${c.swaps}  ends ${c.ends}\n${log.join('\n')}`
+        : 'no __pagebits (reduced motion, or setup failed)';
+      requestAnimationFrame(tick);
+    };
+    tick();
+    // The fetch patches apply to the next fetch the router makes: press a button BEFORE hovering the
+    // link, and reload the lab between modes (the router caches pages it has already fetched).
+    strip.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.dataset.fetch) {
+        mode = b.dataset.fetch;
+        if (mode === 'slow') window.fetch = (...a) => new Promise((r) => setTimeout(r, 2500)).then(() => real(...a));
+        else if (mode === 'fail') window.fetch = () => new Promise((_, rej) => setTimeout(() => rej(new TypeError('tx-lab: fetch blocked')), 1500));
+        else window.fetch = real;
+        modeEl.textContent = `fetch: ${mode}`;
+      } else if (b.dataset.act === 'freeze') {
+        addEventListener('pageshift', (ev) => {
+          const at = ev.detail.swapAt + 250;
+          setTimeout(() => window.__pagebits?.freeze(at), Math.max(0, at - performance.now()));
+        }, { once: true });
+        modeEl.textContent = `fetch: ${mode}  (armed: freeze at swap+250)`;
+      } else if (b.dataset.act === 'thaw') {
+        window.__pagebits?.thaw();
+        modeEl.textContent = `fetch: ${mode}`;
+      }
+    });
+  }
+</script>
+</body>
+</html>
